@@ -37,8 +37,7 @@ Start:
 ;--------------------------------------------------------------------|
 SetPosition	proc
 
-		mov di, SCREENW			; di = 25
-		;sub di, MYWIDTH		; di -= MYWIDTH
+		mov di, SCREENW			; di = SCREEN_WIDTH
 		
 		xor ax, ax
 		mov al, dh
@@ -47,10 +46,8 @@ SetPosition	proc
 		shr di, 1			; di //= 2
 		mov bx, SCREENL			; bx = 80
 		mov al, dl
-		sub bx, ax
-		;sub bx, MYLENGTH		; bx = length
-						; Haven't shr bx, because it's in bytes
-
+		sub bx, ax			; bx = user_length ; Haven't to shr bx, because I need length in bytes
+		
 		mov ax, di			; ax = di
 		shl di, 7			; di *= 2^7
 		shl ax, 5			; ax *= 2^5
@@ -73,9 +70,9 @@ DrawFrame	proc
 		call DrawLine
 
 		xor bx, bx
-		mov bl, dh
-		;mov bx, MYWIDTH
+		mov bl, dh			; bx = user_width
 		sub bx, 2h
+
 RepeatedLines:	call DrawLine
 		sub si, 3h
 		dec bx
@@ -102,9 +99,8 @@ DrawLine	proc
 
 		lodsb				; al = ds:[si++]
 		xor cx, cx
-		mov cl, dl
-		;mov cx, MYLENGTH		; change to push and pop cx
-		sub cx, 2h
+		mov cl, dl			; cx = user_length
+		sub cx, 2h			
 		rep stosw			; rep use cx
 
 		lodsb
@@ -117,7 +113,10 @@ DrawLine	proc
 
 DrawLine	endp
 ;--------------------------------------------------------------------|
+;--------------------------------------------------------------------|
+;--------------------------------------------------------------------|
 .data
 Symbols		db "*-*I I*-*", "$"
+String		db "Happy Valentine!$", "$"
 ;--------------------------------------------------------------------|
 end		Start
