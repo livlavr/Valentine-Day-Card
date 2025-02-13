@@ -10,14 +10,31 @@ MYWIDTH		equ 0fh
 SCREENL		equ 050h
 SCREENW		equ 019h
 ;--------------------------------------------------------------------|
+; Enter:  DI
+; Broke:  AX
+; Output: DI
+;
+; Description:
+; ax = di
+; di *= 2^7
+; ax *= 2^5
+; di += ax
+; di += bx
+;--------------------------------------------------------------------|
+DI_MUL_160	equ mov ax, di	\
+		shl di, 7	\
+		shl ax, 5	\
+		add di, ax	\
+		add di, bx	\
+;--------------------------------------------------------------------|
 ; DH - X coord the start of frame
 ; DL - Y coord the start of frame
 ; BH - Lenght of frame
 ; BL - Height of frame
 ;--------------------------------------------------------------------|
-Start:		
+Start:
 		mov dl, MYLENGTH
-		mov dh, MYWIDTH		
+		mov dh, MYWIDTH
 
 		call SetPosition
 
@@ -38,16 +55,16 @@ Start:
 SetPosition	proc
 
 		mov di, SCREENW			; di = SCREEN_WIDTH
-		
+
 		xor ax, ax
 		mov al, dh
 		sub di, ax
-		
+
 		shr di, 1			; di //= 2
 		mov bx, SCREENL			; bx = 80
 		mov al, dl
 		sub bx, ax			; bx = user_length ; Haven't to shr bx, because I need length in bytes
-		
+
 		mov ax, di			; ax = di
 		shl di, 7			; di *= 2^7
 		shl ax, 5			; ax *= 2^5
@@ -78,7 +95,7 @@ RepeatedLines:	call DrawLine
 		dec bx
 		cmp bx, 0h
 		jne RepeatedLines
-		
+
 		add si, 3h
 		call DrawLine
 
@@ -100,7 +117,7 @@ DrawLine	proc
 		lodsb				; al = ds:[si++]
 		xor cx, cx
 		mov cl, dl			; cx = user_length
-		sub cx, 2h			
+		sub cx, 2h
 		rep stosw			; rep use cx
 
 		lodsb
@@ -113,7 +130,15 @@ DrawLine	proc
 
 DrawLine	endp
 ;--------------------------------------------------------------------|
+; Enter: DI - (top left corner of frame (Pixels)),
+	DX - Sizes Of Frame (DH - Width, DL - Lenght)
+; Broke: CX, SI, DI(stack fix)
+; Output:
 ;--------------------------------------------------------------------|
+PrintLine	proc
+;		DI += (DH >> 1) * 160
+		ret
+PrintLine	endp
 ;--------------------------------------------------------------------|
 .data
 Symbols		db "*-*I I*-*", "$"
