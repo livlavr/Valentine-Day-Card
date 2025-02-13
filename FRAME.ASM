@@ -12,7 +12,7 @@ SCREENW		equ 019h
 ;--------------------------------------------------------------------|
 ; Enter:  DI
 ; Broke:  AX
-; Output: DI
+; Output: DI*160
 ;
 ; Description:
 ; ax = di
@@ -21,11 +21,13 @@ SCREENW		equ 019h
 ; di += ax
 ; di += bx
 ;--------------------------------------------------------------------|
-DI_MUL_160	equ mov ax, di	\
-		shl di, 7	\
-		shl ax, 5	\
-		add di, ax	\
-		add di, bx	\
+DI_MUL_160	macro
+		mov ax, di	
+		shl di, 7	
+		shl ax, 5	
+		add di, ax	
+		add di, bx
+endm
 ;--------------------------------------------------------------------|
 ; DH - X coord the start of frame
 ; DL - Y coord the start of frame
@@ -65,11 +67,7 @@ SetPosition	proc
 		mov al, dl
 		sub bx, ax			; bx = user_length ; Haven't to shr bx, because I need length in bytes
 
-		mov ax, di			; ax = di
-		shl di, 7			; di *= 2^7
-		shl ax, 5			; ax *= 2^5
-		add di, ax			; di += ax
-		add di, bx			; di += bx
+		DI_MUL_160
 
 		ret
 
@@ -131,7 +129,7 @@ DrawLine	proc
 DrawLine	endp
 ;--------------------------------------------------------------------|
 ; Enter: DI - (top left corner of frame (Pixels)),
-	DX - Sizes Of Frame (DH - Width, DL - Lenght)
+;        DX - Sizes Of Frame (DH - Width, DL - Lenght)
 ; Broke: CX, SI, DI(stack fix)
 ; Output:
 ;--------------------------------------------------------------------|
