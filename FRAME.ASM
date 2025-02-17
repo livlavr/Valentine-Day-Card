@@ -2,6 +2,7 @@
 .186
 .code
 org 100h
+locals
 ;--------------------------------------------------------------------|
 VIDEOSEG	equ 0b800h
 COLOR		equ 00100000b
@@ -19,14 +20,12 @@ SCREENW		equ 019h
 ; di *= 2^7
 ; ax *= 2^5
 ; di += ax
-; di += bx
 ;--------------------------------------------------------------------|
 DI_MUL_160	macro
-		mov ax, di	
-		shl di, 7	
-		shl ax, 5	
-		add di, ax	
-		add di, bx
+		mov ax, di
+		shl di, 7
+		shl ax, 5
+		add di, ax
 endm
 ;--------------------------------------------------------------------|
 ; DH - X coord the start of frame
@@ -34,11 +33,10 @@ endm
 ; BH - Lenght of frame
 ; BL - Height of frame
 ;--------------------------------------------------------------------|
-Start:
-		mov dl, MYLENGTH
+Start:		mov dl, MYLENGTH
 		mov dh, MYWIDTH
 
-		call SetPosition
+		call SetFramePosition
 
 		mov bx, VIDEOSEG
 		mov es, bx
@@ -54,24 +52,23 @@ Start:
 ; Broke:  BX, DI, AX
 ; Output: DI - Position of left high frames angle
 ;--------------------------------------------------------------------|
-SetPosition	proc
+SetFramePosition	proc
 
-		mov di, SCREENW			; di = SCREEN_WIDTH
+		mov di, SCREENW			; di = 25 (screen_width)
 
-		xor ax, ax
-		mov al, dh
-		sub di, ax
+		xor ax, ax			; ax = 0
+		mov al, dh			; ax = user_height
+		sub di, ax			; di -= ax
 
 		shr di, 1			; di //= 2
-		mov bx, SCREENL			; bx = 80
-		mov al, dl
-		sub bx, ax			; bx = user_length ; Haven't to shr bx, because I need length in bytes
-
-		DI_MUL_160
-
+		mov bx, SCREENL			; bx = 80 (screen_length)
+		mov al, dl			; ax = user_length
+		sub bx, ax			; bx -= ax ; Haven't to shr bx, because I need length in bytes
+		DI_MUL_160			; di *= 160 (Broke ax)
+		add di, bx			; di += bx
 		ret
 
-SetPosition	endp
+SetFramePosition	endp
 ;--------------------------------------------------------------------|
 ; Enter: DI, DX
 ; Broke: AX, SI, DI, BX
@@ -130,13 +127,77 @@ DrawLine	endp
 ;--------------------------------------------------------------------|
 ; Enter: DI - (top left corner of frame (Pixels)),
 ;        DX - Sizes Of Frame (DH - Width, DL - Lenght)
-; Broke: CX, SI, DI(stack fix)
+; Broke: DI(stack fix), AX(in macros and in lodsb), BX(Line Position)
 ; Output:
 ;--------------------------------------------------------------------|
-PrintLine	proc
-;		DI += (DH >> 1) * 160
+PrintMessage	proc
+
+		mov bx, di			; bx = di (top left corner of frame (Pixels)) ??????????????????????????
+
+		mov byte ptr si, offset String			; si = &String
+
+		call SetStringPosition			; Get line position to di register
+
+		cmp ds:[si], '$'			; if(ds:[si] == '$'): SkipLoop
+		je SkipLoop
+
+; Не забудь сделать цвет у букв в ah
+
+@@Loop:	lodsb			; al = ds:[si++]
+		stosw			; es:[di] = ax
+		cmp al, '$'		; if al == '$': stop printing
+		jne @@Loop
+
+SkipLoop:	ret
+
+PrintMessage	endp
+;--------------------------------------------------------------------|
+; Enter: BX, DI - (top left corner of frame (Pixels)),
+;        DX - Sizes Of Frame (DH - Width, DL - Lenght),
+;		 SI = &String
+; Broke: DI, CX, AX, BX
+; Output: DI - position of the text line
+;--------------------------------------------------------------------|
+SetStringPosition	proc
+		xor cx, cx			; cx = 0
+		mov cl, dh			; cx = Width
+		shr cx, 1			; cx /= 2 (cx = 1/2 Width)
+		mov di, cx			; di = cx (di = 1/2 Width)
+		DI_MUL_160			; di *= 160 (di = 160px * 1/2 Width)
+		add di, bx			; di += top left corner of frame (Pixels)
+						; add shift for multiline
+		call GetStringLength
+
+		rep stosw
+
 		ret
-PrintLine	endp
+SetStringPosition	endp
+;--------------------------------------------------------------------|
+; Enter: BX, DI - (top left corner of frame (Pixels)),
+;        DX - Sizes Of Frame (DH - Width, DL - Lenght),
+;		 SI = = &String
+; Broke: AX, SI(fixed), BX, CX
+; Output: CX - length of string
+;--------------------------------------------------------------------|
+GetStringLength	proc
+		mov bx, si			; bx = &String
+		xor ax, ax			; ax = 0
+		xor cx, cx			; cx = 0
+		cmp ds:[si], '$'
+		je SkipCountLength
+
+CountLength:	lodsb			; al = ds:[si]
+		cmp ax, '$'
+		jne CountLength
+
+		sub	si, bx			; si -= &String
+		mov cx, si			; cx = si (length of string)
+		mov	si, bx			; si = &String
+
+SkipCountLength:
+		ret
+
+GetStringLength	endp
 ;--------------------------------------------------------------------|
 .data
 Symbols		db "*-*I I*-*", "$"
