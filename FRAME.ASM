@@ -43,6 +43,8 @@ Start:		mov dl, MYLENGTH
 		xor bx, bx
 
 		call DrawFrame
+		
+		call PrintMessage
 
 		mov ax, 4c00h			; return 0
 		int 21h
@@ -134,18 +136,20 @@ PrintMessage	proc
 
 		mov bx, di			; bx = di (top left corner of frame (Pixels)) ??????????????????????????
 
-		mov byte ptr si, offset String			; si = &String
+		mov byte ptr si, offset String	; si = &String
 
-		call SetStringPosition			; Get line position to di register
+		call SetStringPosition		; Get line position to di register
 
-		cmp ds:[si], '$'			; if(ds:[si] == '$'): SkipLoop
+		xor ax, ax			; ax = 0
+		mov al, ds:[si]			; al = ds:[si] (al = String[0])
+		cmp al, '$'			; if(ds:[si] == '$'): SkipLoop
 		je SkipLoop
 
-; Не забудь сделать цвет у букв в ah
+; make colors in ah
 
-@@Loop:	lodsb			; al = ds:[si++]
-		stosw			; es:[di] = ax
-		cmp al, '$'		; if al == '$': stop printing
+@@Loop:		lodsb				; al = ds:[si++]
+		stosw				; es:[di] = ax
+		cmp ax, '$'			; if al == '$': stop printing
 		jne @@Loop
 
 SkipLoop:	ret
@@ -173,20 +177,21 @@ SetStringPosition	proc
 		ret
 SetStringPosition	endp
 ;--------------------------------------------------------------------|
-; Enter: BX, DI - (top left corner of frame (Pixels)),
-;        DX - Sizes Of Frame (DH - Width, DL - Lenght),
-;		 SI = = &String
-; Broke: AX, SI(fixed), BX, CX
+; Enter:  BX, DI - (top left corner of frame (Pixels)),
+;         DX - Sizes Of Frame (DH - Width, DL - Lenght),
+;	  SI = = &String
+; Broke:  AX, SI(fixed), BX, CX
 ; Output: CX - length of string
 ;--------------------------------------------------------------------|
 GetStringLength	proc
 		mov bx, si			; bx = &String
 		xor ax, ax			; ax = 0
 		xor cx, cx			; cx = 0
-		cmp ds:[si], '$'
+		mov al, ds:[si]			; al = String[0]
+		cmp ax, '$'
 		je SkipCountLength
 
-CountLength:	lodsb			; al = ds:[si]
+CountLength:	lodsb				; al = ds:[si]
 		cmp ax, '$'
 		jne CountLength
 
