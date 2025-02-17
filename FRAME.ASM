@@ -34,9 +34,10 @@ endm
 ; BH - Lenght of frame
 ; BL - Height of frame
 ;--------------------------------------------------------------------|
-Start:		mov dl, MYLENGTH
-		mov dh, MYWIDTH
-
+Start:		;mov dl, MYLENGTH
+		;mov dh, MYWIDTH
+		call GetCMDLArgs  
+	
 		call SetFramePosition
 		push di
 
@@ -51,6 +52,8 @@ Start:		mov dl, MYLENGTH
 
 		mov ax, 4c00h			; return 0
 		int 21h
+
+include CommandLine.asm
 
 ;--------------------------------------------------------------------|
 ; Enter:  DX
