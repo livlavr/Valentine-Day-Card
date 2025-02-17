@@ -37,6 +37,7 @@ Start:		mov dl, MYLENGTH
 		mov dh, MYWIDTH
 
 		call SetFramePosition
+		push di
 
 		mov bx, VIDEOSEG
 		mov es, bx
@@ -44,6 +45,7 @@ Start:		mov dl, MYLENGTH
 
 		call DrawFrame
 		
+		pop di
 		call PrintMessage
 
 		mov ax, 4c00h			; return 0
@@ -145,11 +147,11 @@ PrintMessage	proc
 		cmp al, '$'			; if(ds:[si] == '$'): SkipLoop
 		je SkipLoop
 
-; make colors in ah
+		mov ah, 0100000b
 
 @@Loop:		lodsb				; al = ds:[si++]
 		stosw				; es:[di] = ax
-		cmp ax, '$'			; if al == '$': stop printing
+		cmp al, '$'			; if al == '$': stop printing
 		jne @@Loop
 
 SkipLoop:	ret
@@ -188,7 +190,7 @@ GetStringLength	proc
 		xor ax, ax			; ax = 0
 		xor cx, cx			; cx = 0
 		mov al, ds:[si]			; al = String[0]
-		cmp ax, '$'
+		cmp al, '$'
 		je SkipCountLength
 
 CountLength:	lodsb				; al = ds:[si]
