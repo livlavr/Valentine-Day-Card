@@ -11,6 +11,7 @@ GetCMDLArgs	proc
 		call GetNumber
 		mov dh, bl
 		call GetColor
+		mov dh, bl
 		ret
 
 GetCMDLArgs	endp
@@ -55,11 +56,9 @@ Digit:		lodsb				; ax = ds:[si++]
 		jg BigLetter
 		cmp ax, 30h 			; ax >= '0'
 		jl BigLetter
+
 		sub ax, 30h
-		mov cx, bx			; cx = bx
-		shl bx, 3			; bx *= 8
-		shl cx, 1			; cx *= 2 (2bx)
-		add bx, cx			; bx = 10bx
+		shl bx, 4			; bx *= 16
 		add bx, ax
 		jmp Digit
 
@@ -69,12 +68,9 @@ BigLetter:
 		cmp ax, 41h 			; ax >= 'A'
 		jl SmallLetter
 
-		sub ax, 30h
-		mov cx, bx			; cx = bx
-		shl bx, 3			; bx *= 8
-		shl cx, 1			; cx *= 2 (2bx)
-		add bx, cx			; bx = 10bx
-		add bx, ax
+		sub ax, 37h
+		shl bx, 4			; bx *= 16
+		add bx, ax			; bx += ax
 		jmp Digit
 
 SmallLetter:
@@ -83,11 +79,8 @@ SmallLetter:
 		cmp ax, 61h 			; ax >= 'a'
 		jl @@Exit
 
-		sub ax, 61h
-		mov cx, bx			; cx = bx
-		shl bx, 3			; bx *= 8
-		shl cx, 1			; cx *= 2 (2bx)
-		add bx, cx			; bx = 10bx
+		sub ax, 57h
+		shl bx, 4			; bx *= 16
 		add bx, ax
 		jmp Digit
 
