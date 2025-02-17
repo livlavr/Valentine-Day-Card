@@ -7,17 +7,10 @@ GetCMDLArgs	proc
 
 		mov si, 82h
 		call GetNumber
-		;mov ax, 0b800h
-		;mov es, ax
-		;xor ax, ax
-		;mov byte ptr al, bl
-		;mov ah, 01000010b
-		;mov di, 0a0h
-		;stosw
 		mov dl, bl
 		call GetNumber
 		mov dh, bl
-
+		
 		ret
 
 GetCMDLArgs	endp
