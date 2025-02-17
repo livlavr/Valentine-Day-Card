@@ -202,23 +202,7 @@ GetStringLength	proc
 		mov bx, si			; bx = &String
 		xor ax, ax			; ax = 0
 		xor cx, cx			; cx = 0
-		mov al, ds:[si]			; al = String[0]
-		cmp al, '$'
-		je SkipCountLength
-
-CountLength:	lodsb				; al = ds:[si++]
-		cmp al, '$'
-		jne CountLength
-		
-		sub si, bx			; si -= &String
-		mov cx, si			; cx = si (length of string)
-		mov si, bx			; si = &String
-		dec cx				; cx -= 1
-
-SkipCountLength:
-		ret
-
-GetStringLength	endp
+		mov al, ds:[si]			
 ;--------------------------------------------------------------------|
 .data
 Symbols		db "*-*I I*-*", "$"

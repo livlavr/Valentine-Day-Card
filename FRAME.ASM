@@ -6,7 +6,7 @@ locals
 ;--------------------------------------------------------------------|
 VIDEOSEG	equ 0b800h
 COLOR		equ 00100000b
-MYLENGTH	equ 020h
+MYLENGTH	equ 021h
 MYWIDTH		equ 05h
 SCREENL		equ 050h
 SCREENW		equ 019h
@@ -63,14 +63,17 @@ SetFramePosition	proc
 
 		xor ax, ax			; ax = 0
 		mov al, dh			; ax = user_height
-		sub di, ax			; di -= ax
-
+		sub di, ax			; di = screen_w - user_h
+		
 		shr di, 1			; di //= 2
 		mov bx, SCREENL			; bx = 80 (screen_length)
 		mov al, dl			; ax = user_length
-		sub bx, ax			; bx -= ax ; Haven't to shr bx, because I need length in bytes
+		sub bx, ax			; bx -= ax
+		shr bx, 1
+		shl bx, 1
 		DI_MUL_160			; di *= 160 (Broke ax)
-		add di, bx			; di += bx
+		
+		add di, bx			; di += bx		
 
 		ret
 
@@ -106,7 +109,7 @@ DrawFrame	endp
 ;--------------------------------------------------------------------|
 ; Enter: DI, DX
 ; Broke: CX, SI, DI(stack fix)
-; Output:
+; Output: none
 ;--------------------------------------------------------------------|
 DrawLine	proc
 
@@ -125,7 +128,7 @@ DrawLine	proc
 		stosw
 
 		pop di
-		add di, 0a0h		; TODO change to define
+		add di, 0a0h		; TODO change to define constant
 
 		ret
 
@@ -145,10 +148,11 @@ PrintMessage	proc
 
 		call SetStringPosition		; Get line position to di register
 
-		xor ax, ax			; ax = 0 ; TODO fix print error if line is empty
-		mov ah, 01000001b	; TODO make useful set color
+		xor ax, ax			; ax = 0 
+					; TODO fix print error if line is empty
+		mov ah, 01000001b		; TODO make useful set color
 
-Print:	lodsb
+Print:		lodsb
 		stosw
 		loop Print
 
@@ -177,6 +181,8 @@ SetStringPosition	proc
 		mov al, dl		; ax = user_length
 		sub ax, cx		; ax = user_length - length_of_word(cx)
 		add di, ax		; di += ax
+		shr di, 1
+		shl di, 1
 
 		ret
 
@@ -208,6 +214,6 @@ GetStringLength	endp
 ;--------------------------------------------------------------------|
 .data
 Symbols		db "*-*I I*-*", "$"
-String		db ""
+String		db "Happy New Year YOUHUUUUU", "$"
 ;--------------------------------------------------------------------|
 end		Start
