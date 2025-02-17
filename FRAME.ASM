@@ -10,6 +10,7 @@ MYLENGTH	equ 020h
 MYWIDTH		equ 05h
 SCREENL		equ 050h
 SCREENW		equ 019h
+; TODO change defines
 ;--------------------------------------------------------------------|
 ; Enter:  DI
 ; Broke:  AX
@@ -44,7 +45,7 @@ Start:		mov dl, MYLENGTH
 		xor bx, bx
 
 		call DrawFrame
-		
+
 		pop di
 		call PrintMessage
 
@@ -124,7 +125,7 @@ DrawLine	proc
 		stosw
 
 		pop di
-		add di, 0a0h
+		add di, 0a0h		; TODO change to define
 
 		ret
 
@@ -137,32 +138,21 @@ DrawLine	endp
 ;--------------------------------------------------------------------|
 PrintMessage	proc
 
-		mov bx, di			; bx = di (top left corner of frame (Pixels)) ??????????????????????????
+		mov bx, di			; bx = di (top left corner of frame (Pixels))
+							; am i need it?
 
 		mov byte ptr si, offset String	; si = &String
 
 		call SetStringPosition		; Get line position to di register
 
-		xor ax, ax			; ax = 0
-		mov al, ds:[si]			; al = ds:[si] (al = String[0])
-		cmp al, '$'			; if(ds:[si] == '$'): SkipLoop
-		je SkipPrint
+		xor ax, ax			; ax = 0 ; TODO fix print error if line is empty
+		mov ah, 01000001b	; TODO make useful set color
 
-		;mov ah, 0100001b		; Letters color
-
-;@@Loop:	lodsb				; al = ds:[si++]
-;		stosw				; es:[di++] = ax
-;		cmp al, '$'			; if al == '$': stop printing
-;		jne @@Loop
-		
-		;inc di
-		mov ah, 01000001b
-
-Print:		lodsb
+Print:	lodsb
 		stosw
 		loop Print
 
-SkipPrint:	ret
+		ret
 
 PrintMessage	endp
 ;--------------------------------------------------------------------|
@@ -180,14 +170,14 @@ SetStringPosition	proc
 		mov di, cx		; di = cx (di = 1/2 Width)
 		DI_MUL_160		; di *= 160 (di = 160px * 1/2 Width)
 		add di, bx	        ; di += top left corner of frame (Pixels)
-					; add shift for multiline
+					; TODO add shift for multiline
 		call GetStringLength
-		
-		xor ax, ax
-		mov al, dl
-		sub ax, cx	
-		add di, ax
-		
+
+		xor ax, ax		; ax = 0
+		mov al, dl		; ax = user_length
+		sub ax, cx		; ax = user_length - length_of_word(cx)
+		add di, ax		; di += ax
+
 		ret
 
 SetStringPosition	endp
@@ -202,20 +192,16 @@ GetStringLength	proc
 		mov bx, si			; bx = &String
 		xor ax, ax			; ax = 0
 		xor cx, cx			; cx = 0
-		mov al, ds:[si]			; al = String[0]
-		cmp al, '$'
-		je SkipCountLength
 
 CountLength:	lodsb				; al = ds:[si++]
 		cmp al, '$'
 		jne CountLength
-		
+
 		sub si, bx			; si -= &String
 		mov cx, si			; cx = si (length of string)
 		mov si, bx			; si = &String
 		dec cx				; cx -= 1
 
-SkipCountLength:
 		ret
 
 GetStringLength	endp
