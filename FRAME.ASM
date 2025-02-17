@@ -6,8 +6,8 @@ locals
 ;--------------------------------------------------------------------|
 VIDEOSEG	equ 0b800h
 COLOR		equ 00100000b
-MYLENGTH	equ 030h
-MYWIDTH		equ 0fh
+MYLENGTH	equ 020h
+MYWIDTH		equ 05h
 SCREENL		equ 050h
 SCREENW		equ 019h
 ;--------------------------------------------------------------------|
@@ -70,6 +70,7 @@ SetFramePosition	proc
 		sub bx, ax			; bx -= ax ; Haven't to shr bx, because I need length in bytes
 		DI_MUL_160			; di *= 160 (Broke ax)
 		add di, bx			; di += bx
+
 		ret
 
 SetFramePosition	endp
@@ -145,43 +146,55 @@ PrintMessage	proc
 		xor ax, ax			; ax = 0
 		mov al, ds:[si]			; al = ds:[si] (al = String[0])
 		cmp al, '$'			; if(ds:[si] == '$'): SkipLoop
-		je SkipLoop
+		je SkipPrint
 
-		mov ah, 0100000b
+		;mov ah, 0100001b		; Letters color
 
-@@Loop:		lodsb				; al = ds:[si++]
-		stosw				; es:[di] = ax
-		cmp al, '$'			; if al == '$': stop printing
-		jne @@Loop
+;@@Loop:	lodsb				; al = ds:[si++]
+;		stosw				; es:[di++] = ax
+;		cmp al, '$'			; if al == '$': stop printing
+;		jne @@Loop
+		
+		;inc di
+		mov ah, 01000001b
 
-SkipLoop:	ret
+Print:		lodsb
+		stosw
+		loop Print
+
+SkipPrint:	ret
 
 PrintMessage	endp
 ;--------------------------------------------------------------------|
-; Enter: BX, DI - (top left corner of frame (Pixels)),
-;        DX - Sizes Of Frame (DH - Width, DL - Lenght),
-;		 SI = &String
-; Broke: DI, CX, AX, BX
+; Enter:  BX, DI - (top left corner of frame (Pixels)),
+;         DX - Sizes Of Frame (DH - Width, DL - Lenght),
+;	  SI = &String
+; Broke:  DI, CX, AX, BX
 ; Output: DI - position of the text line
 ;--------------------------------------------------------------------|
 SetStringPosition	proc
-		xor cx, cx			; cx = 0
-		mov cl, dh			; cx = Width
-		shr cx, 1			; cx /= 2 (cx = 1/2 Width)
-		mov di, cx			; di = cx (di = 1/2 Width)
-		DI_MUL_160			; di *= 160 (di = 160px * 1/2 Width)
-		add di, bx			; di += top left corner of frame (Pixels)
-						; add shift for multiline
+
+		xor cx, cx		; cx = 0
+		mov cl, dh		; cx = Width
+		shr cx, 1		; cx /= 2 (cx = 1/2 Width)
+		mov di, cx		; di = cx (di = 1/2 Width)
+		DI_MUL_160		; di *= 160 (di = 160px * 1/2 Width)
+		add di, bx	        ; di += top left corner of frame (Pixels)
+					; add shift for multiline
 		call GetStringLength
-
-		rep stosw
-
+		
+		xor ax, ax
+		mov al, dl
+		sub ax, cx	
+		add di, ax
+		
 		ret
+
 SetStringPosition	endp
 ;--------------------------------------------------------------------|
 ; Enter:  BX, DI - (top left corner of frame (Pixels)),
 ;         DX - Sizes Of Frame (DH - Width, DL - Lenght),
-;	  SI = = &String
+;	  SI = &String
 ; Broke:  AX, SI(fixed), BX, CX
 ; Output: CX - length of string
 ;--------------------------------------------------------------------|
@@ -193,13 +206,14 @@ GetStringLength	proc
 		cmp al, '$'
 		je SkipCountLength
 
-CountLength:	lodsb				; al = ds:[si]
-		cmp ax, '$'
+CountLength:	lodsb				; al = ds:[si++]
+		cmp al, '$'
 		jne CountLength
-
-		sub	si, bx			; si -= &String
+		
+		sub si, bx			; si -= &String
 		mov cx, si			; cx = si (length of string)
-		mov	si, bx			; si = &String
+		mov si, bx			; si = &String
+		dec cx				; cx -= 1
 
 SkipCountLength:
 		ret
