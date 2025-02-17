@@ -34,10 +34,9 @@ endm
 ; BH - Lenght of frame
 ; BL - Height of frame
 ;--------------------------------------------------------------------|
-Start:		;mov dl, MYLENGTH
-		;mov dh, MYWIDTH
-		call GetCMDLArgs  
-	
+Start:		call GetCMDLArgs  
+		
+		mov byte ptr si, offset String
 		call SetFramePosition
 		push di
 
@@ -56,13 +55,29 @@ Start:		;mov dl, MYLENGTH
 include CommandLine.asm
 
 ;--------------------------------------------------------------------|
-; Enter:  DX
+; Enter:  DX, SI - String to print
 ; Broke:  BX, DI, AX
 ; Output: DI - Position of left high frames angle
 ;--------------------------------------------------------------------|
 SetFramePosition	proc
+		
+		xor ax, ax
+		mov al, dl
+		cmp ax, 0h
+		jne SkipAutoLength
 
-		mov di, SCREENW			; di = 25 (screen_width)
+		call GetStringLength
+		xor ax, ax
+		add cx, 4h			; magic const sorry
+		mov dl, cl		
+
+SkipAutoLength:	mov al, dh
+		cmp ax, 0h
+		jne SkipAutoHeight
+
+		mov dh,	5h			; TODO fix 
+
+SkipAutoHeight:	mov di, SCREENW			; di = 25 (screen_width)
 
 		xor ax, ax			; ax = 0
 		mov al, dh			; ax = user_height
@@ -191,9 +206,7 @@ SetStringPosition	proc
 
 SetStringPosition	endp
 ;--------------------------------------------------------------------|
-; Enter:  BX, DI - (top left corner of frame (Pixels)),
-;         DX - Sizes Of Frame (DH - Width, DL - Lenght),
-;	  SI = &String
+; Enter:  SI = &String
 ; Broke:  AX, SI(fixed), BX, CX
 ; Output: CX - length of string
 ;--------------------------------------------------------------------|
