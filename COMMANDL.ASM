@@ -31,11 +31,11 @@ GetNumber	proc
 		xor bx, bx
 		xor ax, ax
 
-@@Loop:	lodsb				; ax = ds:[si++]
+@@Loop:		lodsb				; ax = ds:[si++]
 		cmp ax, 39h			; ax <= '9'
-		jge @@Exit
+		jg @@Exit
 		cmp ax, 30h 			; ax >= '0'
-		jle @@Exit
+		jl @@Exit
 		sub ax, 30h
 		mov cx, bx			; cx = bx
 		shl bx, 3			; bx *= 8
@@ -44,8 +44,7 @@ GetNumber	proc
 		add bx, ax
 		jmp @@Loop
 
-@@Exit:		inc si
-		ret
+@@Exit:		ret
 
 GetNumber	endp
 ;--------------------------------------------------------------------|
