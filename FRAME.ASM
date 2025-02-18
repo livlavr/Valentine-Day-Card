@@ -33,7 +33,8 @@ endm
 ;--------------------------------------------------------------------|
 Start:		call GetCMDLArgs
 
-		mov byte ptr si, offset String
+		;mov byte ptr si, offset String
+		mov si, String
 		call SetFramePosition
 		push di
 
@@ -159,7 +160,8 @@ PrintMessage	proc
 		mov bx, di			; bx = di (top left corner of frame (Pixels))
 							; am i need it?
 
-		mov byte ptr si, offset String	; si = &String
+		;mov byte ptr si, offset String	; si = &String
+		mov si, String	; si = &String
 
 		call SetStringPosition		; Get line position to di register
 
@@ -226,7 +228,7 @@ CountLength:	lodsb				; al = ds:[si++]
 GetStringLength	endp
 ;--------------------------------------------------------------------|
 .data
-String		db "Happy New Year", "$"
+String		dw 0
 FramesArray	db "*-*I I*-*"
 		db "@#@# #@#@"
 		db "$~$+ +$~$"

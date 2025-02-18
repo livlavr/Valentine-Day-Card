@@ -6,14 +6,17 @@
 GetCMDLArgs	proc
 
 		mov si, 82h
-		call GetNumber			; bl - length of frame
+		call GetNumber			; bl = length of frame
 		mov dl, bl
-		call GetNumber			; bl - Height of frame
+		call GetNumber			; bl = Height of frame
 		mov dh, bl
-		call GetColor			; bl - ColorHexNumber
+		call GetColor			; bl = ColorHexNumber
 		mov FrameColor, bl
-		call GetNumber			; bl - NumberOfPreset
-		call SetStyle			; Style - Preset
+		call GetNumber			; bl = NumberOfPreset
+		call SetStyle			; Style = Preset
+		mov String, si
+		;call GetString			; String = Frame Message(si)
+
 		ret
 
 GetCMDLArgs	endp
@@ -112,15 +115,19 @@ SetStyle	proc
 UserStyle:
 		;mov ax, si
 		mov Style, si
-		add si, 11			; move ptr to start of message '"'
+		add si, 10			; move ptr to start of Message
 
 @@Exit:		ret
 
 SetStyle	endp
 ;--------------------------------------------------------------------|
+;Enter:
+;Broke:
+;Output:
 ;--------------------------------------------------------------------|
-;--------------------------------------------------------------------|
-;--------------------------------------------------------------------|
-;--------------------------------------------------------------------|
-;--------------------------------------------------------------------|
+GetNumber	proc
+
+@@Exit:		ret
+
+GetNumber	endp
 ;--------------------------------------------------------------------|
