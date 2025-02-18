@@ -12,6 +12,7 @@ GetCMDLArgs	proc
 		mov dh, bl
 		call GetColor
 		mov ch, bl
+
 		ret
 
 GetCMDLArgs	endp
@@ -87,6 +88,41 @@ SmallLetter:
 @@Exit:		ret
 
 GetColor	endp
+;--------------------------------------------------------------------|
+;Enter:
+;Broke:
+;Output: BP - Preset
+;--------------------------------------------------------------------|
+GetStylePreset	proc
+		call GetNumber
+		cmp bx, 0h
+		je CustomFrame
+
+		mov ax, bx
+		shl bx, 3h
+		add bx, ax
+		mov byte ptr bp, offset FramesArray
+		add bp, bx
+		jmp @@Exit
+
+CustomFrame:
+		inc si
+		mov bp, offset ds:[si]
+		add si, 0Ch			; TODO fix this bullshit
+@@Exit
+		ret
+
+GetStylePreset	endp
+;--------------------------------------------------------------------|
+;Enter:
+;Broke:
+;Output: SI - Message
+;--------------------------------------------------------------------|
+GetString	proc
+		mov si, offset ds:[si]
+
+		ret
+GetString	endp
 ;--------------------------------------------------------------------|
 ;--------------------------------------------------------------------|
 ;--------------------------------------------------------------------|
