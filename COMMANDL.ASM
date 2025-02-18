@@ -90,7 +90,7 @@ SmallLetter:
 
 GetColor	endp
 ;--------------------------------------------------------------------|
-;Enter: BL - Number of Preset
+;Enter: BL - Number of Preset, SI - Beginning of user style (if exists)
 ;Broke: AX, BX
 ;Output: Style - style preset
 ;--------------------------------------------------------------------|
@@ -104,17 +104,17 @@ SetStyle	proc
 		add bx, ax			;
 
 		xor ax, ax
-		mov byte ptr ax, FramesArray
+		mov ax, offset FramesArray
 		add ax, bx
 		mov Style, ax
 		jmp @@Exit
 
 UserStyle:
-		inc si				; fix to check is there '"' sign
-		mov byte ptr Style, ds:[si]
+		;mov ax, si
+		mov Style, si
 		add si, 11			; move ptr to start of message '"'
 
-@@Exit:	ret
+@@Exit:		ret
 
 SetStyle	endp
 ;--------------------------------------------------------------------|

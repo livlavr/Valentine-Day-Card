@@ -101,7 +101,7 @@ SetFramePosition	endp
 DrawFrame	proc
 
 		mov ah, FrameColor		; ah = Frame Color
-		mov si, offset Style	; si = &Style
+		mov word ptr si, Style		; si = Style
 
 		call DrawLine
 
@@ -227,12 +227,14 @@ GetStringLength	endp
 ;--------------------------------------------------------------------|
 .data
 String		db "Happy New Year", "$"
-FramesArray		db "*-*I I*-*"
-			db "@#@# #@#@"
-        	db "$~$+ +$~$"
-            db "*********"
-			db "*!*!?!*!*"
-Style		db 0
+FramesArray	db "*-*I I*-*"
+		db "@#@# #@#@"
+		db "$~$+ +$~$"
+		db "*********"
+		db "*!*!?!*!*"
+		db 0dbh, 0dfh, 0dbh, 0ddh, 0h, 0deh, 0dbh, 0dch, 0dbh
+		db 3h, 3h, 3h, 3h, 0b0h, 3h, 3h, 3h, 3h
+Style		dw 0
 FrameColor	db 0
 ;--------------------------------------------------------------------|
 end		Start
