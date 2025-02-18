@@ -10,7 +10,7 @@ GetCMDLArgs	proc
 		mov dl, bl
 		call GetNumber
 		mov dh, bl
-		
+		call GetColor
 		ret
 
 GetCMDLArgs	endp
@@ -41,6 +41,59 @@ GetNumber	proc
 
 GetNumber	endp
 ;--------------------------------------------------------------------|
+;Enter: SI - Beginning of the color
+;Broke:	CX, BX, SI, AX
+;Output: BX - Number from console
+;--------------------------------------------------------------------|
+GetColor	proc
+
+		xor bx, bx
+		xor ax, ax
+
+Digit:		lodsb				; ax = ds:[si++]
+		cmp ax, 39h			; ax <= '9'
+		jg BigLetter
+		cmp ax, 30h 			; ax >= '0'
+		jl BigLetter
+		sub ax, 30h
+		mov cx, bx			; cx = bx
+		shl bx, 3			; bx *= 8
+		shl cx, 1			; cx *= 2 (2bx)
+		add bx, cx			; bx = 10bx
+		add bx, ax
+		jmp Digit
+
+BigLetter:
+		cmp ax, 46h			; ax <= 'F'
+		jg SmallLetter
+		cmp ax, 41h 			; ax >= 'A'
+		jl SmallLetter
+
+		sub ax, 30h
+		mov cx, bx			; cx = bx
+		shl bx, 3			; bx *= 8
+		shl cx, 1			; cx *= 2 (2bx)
+		add bx, cx			; bx = 10bx
+		add bx, ax
+		jmp Digit
+
+SmallLetter:
+		cmp ax, 66h			; ax <= 'f'
+		jg @@Exit
+		cmp ax, 61h 			; ax >= 'a'
+		jl @@Exit
+
+		sub ax, 61h
+		mov cx, bx			; cx = bx
+		shl bx, 3			; bx *= 8
+		shl cx, 1			; cx *= 2 (2bx)
+		add bx, cx			; bx = 10bx
+		add bx, ax
+		jmp Digit
+
+@@Exit:		ret
+
+GetColor	endp
 ;--------------------------------------------------------------------|
 ;--------------------------------------------------------------------|
 ;--------------------------------------------------------------------|
