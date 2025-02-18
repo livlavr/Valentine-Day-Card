@@ -6,8 +6,6 @@ locals
 ;--------------------------------------------------------------------|
 VIDEOSEG	equ 0b800h
 COLOR		equ 00100000b
-MYLENGTH	equ 021h
-MYWIDTH		equ 05h
 SCREENL		equ 050h
 SCREENW		equ 019h
 ; TODO change defines
@@ -29,23 +27,26 @@ DI_MUL_160	macro
 		add di, ax
 endm
 ;--------------------------------------------------------------------|
-; DH - X coord the start of frame
-; DL - Y coord the start of frame
-; BH - Lenght of frame
-; BL - Height of frame
-;--------------------------------------------------------------------|
-Start:		call GetCMDLArgs  
-		
-		mov byte ptr si, offset String
+Start:
+		call GetCMDLArgs
+
+		;mov byte ptr si, offset String
 		call SetFramePosition
+		push cx
 		push di
+		push bp
 
 		mov bx, VIDEOSEG
 		mov es, bx
 		xor bx, bx
 
+		push si
 		call DrawFrame
 
+
+
+		pop si
+		pop bp
 		pop di
 		call PrintMessage
 
@@ -60,7 +61,6 @@ include CommandLine.asm
 ; Output: DI - Position of left high frames angle
 ;--------------------------------------------------------------------|
 SetFramePosition	proc
-		
 		xor ax, ax
 		mov al, dl
 		cmp ax, 0h
@@ -68,21 +68,23 @@ SetFramePosition	proc
 
 		call GetStringLength
 		xor ax, ax
-		add cx, 4h			; magic const sorry
-		mov dl, cl		
+		add ax, 4h			; magic const sorry
+		mov dl, al
 
-SkipAutoLength:	mov al, dh
+SkipAutoLength:
+		mov al, dh
 		cmp ax, 0h
 		jne SkipAutoHeight
 
-		mov dh,	5h			; TODO fix 
+		mov dh,	5h			; TODO fix
 
-SkipAutoHeight:	mov di, SCREENW			; di = 25 (screen_width)
+SkipAutoHeight:
+		mov di, SCREENW			; di = 25 (screen_width)
 
 		xor ax, ax			; ax = 0
 		mov al, dh			; ax = user_height
 		sub di, ax			; di = screen_w - user_h
-		
+
 		shr di, 1			; di //= 2
 		mov bx, SCREENL			; bx = 80 (screen_length)
 		mov al, dl			; ax = user_length
@@ -90,11 +92,10 @@ SkipAutoHeight:	mov di, SCREENW			; di = 25 (screen_width)
 		shr bx, 1
 		shl bx, 1
 		DI_MUL_160			; di *= 160 (Broke ax)
-		
-		add di, bx			; di += bx		
+
+		add di, bx			; di += bx
 
 		ret
-
 SetFramePosition	endp
 ;--------------------------------------------------------------------|
 ; Enter: DI, DX
@@ -102,9 +103,9 @@ SetFramePosition	endp
 ; Output: none
 ;--------------------------------------------------------------------|
 DrawFrame	proc
-
-		mov ah, COLOR			; ah = color
-		mov si, offset Symbols		; si = &Symbols
+		;mov ah, COLOR			; ah = color
+		mov ah, ch
+		;mov si, bp
 
 		call DrawLine
 
@@ -122,15 +123,13 @@ RepeatedLines:	call DrawLine
 		call DrawLine
 
 		ret
-
 DrawFrame	endp
 ;--------------------------------------------------------------------|
 ; Enter: DI, DX
-; Broke: CX, SI, DI(stack fix)
+; Broke: AX, CX, SI, DI(stack fix)
 ; Output: none
 ;--------------------------------------------------------------------|
 DrawLine	proc
-
 		push di
 
 		lodsb				; al = ds:[si++]
@@ -149,7 +148,6 @@ DrawLine	proc
 		add di, 0a0h		; TODO change to define constant
 
 		ret
-
 DrawLine	endp
 ;--------------------------------------------------------------------|
 ; Enter: DI - (top left corner of frame (Pixels)),
@@ -158,24 +156,23 @@ DrawLine	endp
 ; Output:
 ;--------------------------------------------------------------------|
 PrintMessage	proc
-
 		mov bx, di			; bx = di (top left corner of frame (Pixels))
 							; am i need it?
 
-		mov byte ptr si, offset String	; si = &String
+		;mov byte ptr si, offset String	; si = &String
 
 		call SetStringPosition		; Get line position to di register
-
-		xor ax, ax			; ax = 0 
+		pop cx;
+		xor ax, ax			; ax = 0
 					; TODO fix print error if line is empty
-		mov ah, 01000001b		; TODO make useful set color
+		;mov ah, 01000001b		; TODO make useful set color
+		mov ah, cl
 
 Print:		lodsb
 		stosw
 		loop Print
 
 		ret
-
 PrintMessage	endp
 ;--------------------------------------------------------------------|
 ; Enter:  BX, DI - (top left corner of frame (Pixels)),
@@ -185,7 +182,6 @@ PrintMessage	endp
 ; Output: DI - position of the text line
 ;--------------------------------------------------------------------|
 SetStringPosition	proc
-
 		xor cx, cx		; cx = 0
 		mov cl, dh		; cx = Width
 		shr cx, 1		; cx /= 2 (cx = 1/2 Width)
@@ -203,7 +199,6 @@ SetStringPosition	proc
 		shl di, 1
 
 		ret
-
 SetStringPosition	endp
 ;--------------------------------------------------------------------|
 ; Enter:  SI = &String
@@ -225,11 +220,15 @@ CountLength:	lodsb				; al = ds:[si++]
 		dec cx				; cx -= 1
 
 		ret
-
 GetStringLength	endp
 ;--------------------------------------------------------------------|
 .data
-Symbols		db "*-*I I*-*", "$"
-String		db "Happy New Year YOUHUUUUU", "$"
+Symbols		db "123456789", "$"
+String		db "Happy New Year!", "$"
+FramesArray     db "*-*I I*-*"
+                db "@#@# #@#@"
+                db "$~$+ +$~$"
+                db "*********"
+				db "*!*!?!*!*"
 ;--------------------------------------------------------------------|
 end		Start

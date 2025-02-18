@@ -1,18 +1,24 @@
 ;--------------------------------------------------------------------|
 ;Enter: SI - Beginning of the number
 ;Broke:	CX, BX, SI, AX
-;Output: BX - Number from console
+;Output: DL - Frame Lenght, DH - Frame Height, CL - Color, BP - Preset,
+;SI - Message
 ;--------------------------------------------------------------------|
 GetCMDLArgs	proc
 
-		mov si, 82h
+		mov si, 82h			; magic const
 		call GetNumber
 		mov dl, bl
 		call GetNumber
 		mov dh, bl
 		call GetColor
-		mov dh, bl
+		mov cl, bl
+		call GetStylePreset
+		call GetString
+
 		ret
+
+; TODO skip ' ' with scasb
 
 GetCMDLArgs	endp
 ;--------------------------------------------------------------------|
@@ -84,13 +90,52 @@ SmallLetter:
 		add bx, ax
 		jmp Digit
 
-@@Exit:		ret
+@@Exit:
+		cmp al, 'h'
+		jne DontSkipH
+
+		add si, 2h
+
+DontSkipH:
+		inc si
+		ret
 
 GetColor	endp
 ;--------------------------------------------------------------------|
+;Enter:
+;Broke:
+;Output: BP - Preset
 ;--------------------------------------------------------------------|
+GetStylePreset	proc
+		call GetNumber
+		cmp bx, 0h
+		je CustomFrame
+
+		mov ax, bx
+		shl bx, 3h
+		add bx, ax
+		mov byte ptr bp, offset FramesArray
+		add bp, bx
+		jmp @@Exit
+
+CustomFrame:
+		inc si
+		mov bp, offset ds:[si]
+		add si, 0Ch			; TODO fix this bullshit
+@@Exit
+		ret
+
+GetStylePreset	endp
 ;--------------------------------------------------------------------|
+;Enter:
+;Broke:
+;Output: SI - Message
 ;--------------------------------------------------------------------|
+GetString	proc
+		mov si, offset ds:[si]
+
+		ret
+GetString	endp
 ;--------------------------------------------------------------------|
 ;--------------------------------------------------------------------|
 ;--------------------------------------------------------------------|
