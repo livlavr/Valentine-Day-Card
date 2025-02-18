@@ -5,9 +5,6 @@ org 100h
 locals
 ;--------------------------------------------------------------------|
 VIDEOSEG	equ 0b800h
-COLOR		equ 00100000b
-MYLENGTH	equ 021h
-MYWIDTH		equ 05h
 SCREENL		equ 050h
 SCREENW		equ 019h
 ; TODO change defines
@@ -103,7 +100,7 @@ SetFramePosition	endp
 ;--------------------------------------------------------------------|
 DrawFrame	proc
 
-		mov ah, COLOR			; ah = color
+		mov ah, FrameColor		; ah = Frame Color
 		mov si, offset Symbols		; si = &Symbols
 
 		call DrawLine
@@ -168,7 +165,7 @@ PrintMessage	proc
 
 		xor ax, ax			; ax = 0
 					; TODO fix print error if line is empty
-		mov ah, 01000001b		; TODO make useful set color
+		mov ah, FrameColor	; TODO make useful set color
 
 Print:		lodsb
 		stosw
@@ -230,6 +227,7 @@ GetStringLength	endp
 ;--------------------------------------------------------------------|
 .data
 Symbols		db "*-*I I*-*", "$"
-String		db "Happy New Year YOUHUUUUU", "$"
+String		db "Happy New Year", "$"
+FrameColor	db 0
 ;--------------------------------------------------------------------|
 end		Start

@@ -11,7 +11,9 @@ GetCMDLArgs	proc
 		call GetNumber
 		mov dh, bl
 		call GetColor
-		mov ch, bl
+		mov FrameColor, bl
+		;call GetNumber
+		;call SetPreset
 		ret
 
 GetCMDLArgs	endp
