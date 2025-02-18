@@ -14,15 +14,14 @@ GetCMDLArgs	proc
 		mov FrameColor, bl
 		call GetNumber			; bl = NumberOfPreset
 		call SetStyle			; Style = Preset
-		mov String, si
-		;call GetString			; String = Frame Message(si)
+		mov String, si			; String = si		
 
 		ret
 
 GetCMDLArgs	endp
 ;--------------------------------------------------------------------|
-;Enter: SI - Beginning of the number
-;Broke:	CX, BX, SI, AX
+;Enter:  SI - Beginning of the number
+;Broke:	 CX, BX, SI, AX
 ;Output: BX - Number from console
 ;--------------------------------------------------------------------|
 GetNumber	proc
@@ -113,21 +112,10 @@ SetStyle	proc
 		jmp @@Exit
 
 UserStyle:
-		;mov ax, si
 		mov Style, si
 		add si, 10			; move ptr to start of Message
 
 @@Exit:		ret
 
 SetStyle	endp
-;--------------------------------------------------------------------|
-;Enter:
-;Broke:
-;Output:
-;--------------------------------------------------------------------|
-GetNumber	proc
-
-@@Exit:		ret
-
-GetNumber	endp
 ;--------------------------------------------------------------------|

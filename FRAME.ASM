@@ -26,14 +26,8 @@ DI_MUL_160	macro
 		add di, ax
 endm
 ;--------------------------------------------------------------------|
-; DH - X coord the start of frame
-; DL - Y coord the start of frame
-; BH - Lenght of frame
-; BL - Height of frame
-;--------------------------------------------------------------------|
 Start:		call GetCMDLArgs
 
-		;mov byte ptr si, offset String
 		mov si, String
 		call SetFramePosition
 		push di
@@ -158,9 +152,7 @@ DrawLine	endp
 PrintMessage	proc
 
 		mov bx, di			; bx = di (top left corner of frame (Pixels))
-							; am i need it?
 
-		;mov byte ptr si, offset String	; si = &String
 		mov si, String	; si = &String
 
 		call SetStringPosition		; Get line position to di register
