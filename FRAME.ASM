@@ -231,10 +231,5 @@ GetStringLength	endp
 .data
 Symbols		db "*-*I I*-*", "$"
 String		db "Happy New Year YOUHUUUUU", "$"
-FramesArray     db "*-*I I*-*"
-                db "@#@# #@#@"
-                db "$~$+ +$~$"
-                db "*********"
-				db "*!*!?!*!*"
 ;--------------------------------------------------------------------|
 end		Start
