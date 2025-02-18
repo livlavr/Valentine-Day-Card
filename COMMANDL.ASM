@@ -6,14 +6,14 @@
 GetCMDLArgs	proc
 
 		mov si, 82h
-		call GetNumber
+		call GetNumber			; bl - length of frame
 		mov dl, bl
-		call GetNumber
+		call GetNumber			; bl - Height of frame
 		mov dh, bl
-		call GetColor
+		call GetColor			; bl - ColorHexNumber
 		mov FrameColor, bl
-		;call GetNumber
-		;call SetPreset
+		call GetNumber			; bl - NumberOfPreset
+		call SetStyle			; Style - Preset
 		ret
 
 GetCMDLArgs	endp
@@ -89,6 +89,34 @@ SmallLetter:
 @@Exit:		ret
 
 GetColor	endp
+;--------------------------------------------------------------------|
+;Enter: BL - Number of Preset
+;Broke: AX, BX
+;Output: Style - style preset
+;--------------------------------------------------------------------|
+SetStyle	proc
+
+		cmp bx, 0h
+		je UserStyle
+
+		mov ax, bx			;
+		shl bx, 3			; bx *= 9
+		add bx, ax			;
+
+		xor ax, ax
+		mov byte ptr ax, FramesArray
+		add ax, bx
+		mov Style, ax
+		jmp @@Exit
+
+UserStyle:
+		inc si				; fix to check is there '"' sign
+		mov byte ptr Style, ds:[si]
+		add si, 11			; move ptr to start of message '"'
+
+@@Exit:	ret
+
+SetStyle	endp
 ;--------------------------------------------------------------------|
 ;--------------------------------------------------------------------|
 ;--------------------------------------------------------------------|

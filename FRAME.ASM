@@ -101,7 +101,7 @@ SetFramePosition	endp
 DrawFrame	proc
 
 		mov ah, FrameColor		; ah = Frame Color
-		mov si, offset Symbols		; si = &Symbols
+		mov si, offset Style	; si = &Style
 
 		call DrawLine
 
@@ -226,8 +226,13 @@ CountLength:	lodsb				; al = ds:[si++]
 GetStringLength	endp
 ;--------------------------------------------------------------------|
 .data
-Symbols		db "*-*I I*-*", "$"
 String		db "Happy New Year", "$"
+FramesArray		db "*-*I I*-*"
+			db "@#@# #@#@"
+        	db "$~$+ +$~$"
+            db "*********"
+			db "*!*!?!*!*"
+Style		db 0
 FrameColor	db 0
 ;--------------------------------------------------------------------|
 end		Start
